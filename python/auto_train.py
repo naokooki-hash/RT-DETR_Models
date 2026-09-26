@@ -251,18 +251,89 @@ def run_dummy_training(args):
         intermediate_onnx.write_bytes(b"RT-DETR Dummy ONNX Content")
         log(f"[EXPORT] ダミーONNXファイルを生成しました: {intermediate_onnx}")
 
-    deploy_onnx = deploy_dir / "model.onnx"
-    try:
-        shutil.copy2(intermediate_onnx, deploy_onnx)
-        log(f"[DEPLOY] 現場配信用フォルダへONNXをコピーしました: {deploy_onnx}")
-    except Exception as e:
-        log(f"[ERROR] ONNXファイルのdeployフォルダへのコピーに失敗しました: {e}")
-        sys.exit(1)
+    # 暗号化および現場配信
+    encrypt_and_deploy_model(intermediate_onnx, output_dir, deploy_dir, getattr(args, "inspection_exe", ""))
+
+
+def encrypt_and_deploy_model(onnx_file: Path, output_dir: Path, deploy_dir: Path, inspection_exe: str):
+    """
+    ONNXモデルを検査アプリCLIで暗号化し、deploy/model.enc へ転送。
+    検査アプリが見つからない場合はフォールバックとして従来の model.onnx を転送。
+    """
+    enc_file = output_dir / "model.enc"
+    encrypted_successfully = False
+
+    # 検査アプリExeの確認
+    resolved_exe = None
+    if inspection_exe and Path(inspection_exe).exists():
+        resolved_exe = Path(inspection_exe).resolve()
+    else:
+        # デフォルト候補を探索
+        default_candidate = Path(r"D:\Deveropment\InspectionSystem_RTDETR\InspectionSystem_RTDETR\bin\Debug\net10.0-windows\InspectionSystem_RTDETR.exe")
+        if default_candidate.exists():
+            resolved_exe = default_candidate
+
+    if resolved_exe:
+        log("--------------------------------------------------")
+        log("[STEP 3/4] 検査アプリのCLIを呼び出してONNXモデルを暗号化中...")
+        log(f"  ・検査アプリExe: {resolved_exe}")
+        log(f"  ・入力ONNX    : {onnx_file}")
+        log(f"  ・出力ENC     : {enc_file}")
+        log("--------------------------------------------------")
+
+        # 実行コマンド構築 (.dll の場合は dotnet 経由、.exe の場合は直接実行)
+        if resolved_exe.suffix.lower() == ".dll":
+            cmd = ["dotnet", str(resolved_exe), "--encrypt-model", str(onnx_file), str(enc_file)]
+        else:
+            cmd = [str(resolved_exe), "--encrypt-model", str(onnx_file), str(enc_file)]
+
+        try:
+            proc = subprocess.Popen(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                bufsize=1,
+            )
+            for line in proc.stdout:
+                print(line, end="", flush=True)
+            proc.wait()
+
+            if proc.returncode == 0 and enc_file.exists():
+                log(f"[SUCCESS] モデル暗号化が完了しました: {enc_file}")
+                encrypted_successfully = True
+            else:
+                log(f"[WARNING] 検査アプリによる暗号化が終了コード {proc.returncode} で完了しなかったか、出力ファイルが生成されませんでした。")
+        except Exception as ex:
+            log(f"[WARNING] 暗号化CLIの実行中にエラーが発生しました: {ex}")
+    else:
+        log("[WARNING] 検査アプリの実行ファイル (InspectionSystem_RTDETR.exe) が未指定または見つかりません。")
+        log("   暗号化処理をスキップし、従来の model.onnx を転送します（フォールバック）。")
+
+    # deploy フォルダへの転送
+    if encrypted_successfully and enc_file.exists():
+        deploy_target = deploy_dir / "model.enc"
+        log(f"[STEP 4/4] 現場配信用フォルダへ暗号化モデルを転送中: {deploy_target}")
+        try:
+            shutil.copy2(enc_file, deploy_target)
+            log(f"[DEPLOY] 現場配信用フォルダへ暗号化モデル (.enc) をコピーしました: {deploy_target}")
+        except Exception as e:
+            log(f"[ERROR] 暗号化モデルのdeployフォルダへのコピーに失敗しました: {e}")
+            sys.exit(1)
+    else:
+        deploy_target = deploy_dir / "model.onnx"
+        log(f"[STEP 4/4] 現場配信用フォルダへONNXモデルを転送中 (フォールバック): {deploy_target}")
+        try:
+            shutil.copy2(onnx_file, deploy_target)
+            log(f"[DEPLOY] 現場配信用フォルダへONNXをコピーしました: {deploy_target}")
+        except Exception as e:
+            log(f"[ERROR] ONNXファイルのdeployフォルダへのコピーに失敗しました: {e}")
+            sys.exit(1)
 
     log("==================================================")
-    log("[FINISH] ダミー学習・エクスポートパイプラインが正常に完了しました！")
+    log("[FINISH] すべてのパイプライン処理が正常に完了しました！")
     log(f"  ・学習出力先: {output_dir}")
-    log(f"  ・配信モデル: {deploy_onnx}")
+    log(f"  ・配信モデル: {deploy_target}")
     log("==================================================")
 
 
@@ -474,20 +545,8 @@ def run_training(args):
 
     log(f"[EXPORT] ONNXエクスポート成功: {intermediate_onnx}")
 
-    # deploy フォルダへの転送
-    deploy_onnx = deploy_dir / "model.onnx"
-    try:
-        shutil.copy2(intermediate_onnx, deploy_onnx)
-        log(f"[DEPLOY] 現場配信用フォルダへONNXをコピーしました: {deploy_onnx}")
-    except Exception as e:
-        log(f"[ERROR] ONNXファイルのdeployフォルダへのコピーに失敗しました: {e}")
-        sys.exit(1)
-
-    log("==================================================")
-    log("[FINISH] すべてのパイプライン処理が正常に完了しました！")
-    log(f"  ・学習出力先: {output_dir}")
-    log(f"  ・配信モデル: {deploy_onnx}")
-    log("==================================================")
+    # 暗号化および現場配信
+    encrypt_and_deploy_model(intermediate_onnx, output_dir, deploy_dir, getattr(args, "inspection_exe", ""))
 
 
 def main():
@@ -528,7 +587,7 @@ def main():
         "--deploy-dir",
         type=str,
         default=r"D:\Deveropment\RT-DETR_Models\deploy",
-        help="現場機配信用フォルダ (最終的に model.onnx を出力)",
+        help="現場機配信用フォルダ (最終的に model.enc / model.onnx を出力)",
     )
     parser.add_argument("--epochs", type=int, default=100, help="学習エポック数")
     parser.add_argument("--batch-size", type=int, default=8, help="バッチサイズ")
@@ -538,6 +597,12 @@ def main():
     parser.add_argument("--tuning", type=str, default=None, help="ファインチューニング用チェックポイント")
     parser.add_argument("--resume", type=str, default=None, help="学習再開用チェックポイント")
     parser.add_argument("--dummy", action="store_true", help="ダミー学習・エクスポートテストを実行")
+    parser.add_argument(
+        "--inspection-exe",
+        type=str,
+        default=r"D:\Deveropment\InspectionSystem_RTDETR\InspectionSystem_RTDETR\bin\Debug\net10.0-windows\InspectionSystem_RTDETR.exe",
+        help="検査アプリ (InspectionSystem_RTDETR.exe) のパス (ONNX自動暗号化用)",
+    )
 
     args = parser.parse_args()
 

@@ -106,20 +106,30 @@ namespace RTDetrTrainerApp
                 return 1;
             }
 
-            Log("[PASS] 学習〜ONNX出力〜deploy転送が正常に完了しました！");
+            Log("[PASS] 学習〜ONNX出力〜暗号化〜deploy転送が正常に完了しました！");
 
-            // 生成された model.onnx の存在確認
-            string deployOnnx = @"D:\Deveropment\RT-DETR_Models\deploy\model.onnx";
-            if (File.Exists(deployOnnx))
+            // 生成された model.enc の存在確認
+            string deployEnc = @"D:\Deveropment\RT-DETR_Models\deploy\model.enc";
+            if (File.Exists(deployEnc))
             {
-                var fi = new FileInfo(deployOnnx);
-                Log($"[VERIFY] 現場配信用ONNXを確認: {deployOnnx} (サイズ: {fi.Length:N0} bytes)");
+                var fi = new FileInfo(deployEnc);
+                Log($"[VERIFY] 現場配信用暗号化モデルを確認: {deployEnc} (サイズ: {fi.Length:N0} bytes)");
             }
             else
             {
-                Log($"[FAIL] 現場配信用ONNXが見つかりません: {deployOnnx}");
+                Log($"[FAIL] 現場配信用暗号化モデルが見つかりません: {deployEnc}");
                 File.WriteAllText("test_result.log", sb.ToString(), Encoding.UTF8);
                 return 1;
+            }
+
+            // ログ内に暗号化ステップが出力されたか確認
+            if (form.LogText.Contains("[STEP 3/4]") && form.LogText.Contains("[STEP 4/4]"))
+            {
+                Log("[VERIFY] 暗号化パイプラインステップ [STEP 3/4], [STEP 4/4] のログ出力を確認しました！");
+            }
+            else
+            {
+                Log("[WARNING] 暗号化ステップのログマーカーが確認できませんでした。");
             }
 
             Log("\n--------------------------------------------------");

@@ -34,6 +34,9 @@ namespace RTDetrTrainerApp.Forms
             this.lblDeploy = new System.Windows.Forms.Label();
             this.txtDeployDir = new System.Windows.Forms.TextBox();
             this.btnBrowseDeploy = new System.Windows.Forms.Button();
+            this.lblInspectionExe = new System.Windows.Forms.Label();
+            this.txtInspectionExe = new System.Windows.Forms.TextBox();
+            this.btnBrowseInspectionExe = new System.Windows.Forms.Button();
 
             this.grpParams = new System.Windows.Forms.GroupBox();
             this.lblConfig = new System.Windows.Forms.Label();
@@ -95,9 +98,12 @@ namespace RTDetrTrainerApp.Forms
             this.grpPaths.Controls.Add(this.lblDeploy);
             this.grpPaths.Controls.Add(this.txtDeployDir);
             this.grpPaths.Controls.Add(this.btnBrowseDeploy);
+            this.grpPaths.Controls.Add(this.lblInspectionExe);
+            this.grpPaths.Controls.Add(this.txtInspectionExe);
+            this.grpPaths.Controls.Add(this.btnBrowseInspectionExe);
             this.grpPaths.Location = new System.Drawing.Point(12, 12);
             this.grpPaths.Name = "grpPaths";
-            this.grpPaths.Size = new System.Drawing.Size(984, 185);
+            this.grpPaths.Size = new System.Drawing.Size(984, 215);
             this.grpPaths.TabIndex = 0;
             this.grpPaths.TabStop = false;
             this.grpPaths.Text = "環境・パス設定";
@@ -208,6 +214,28 @@ namespace RTDetrTrainerApp.Forms
             this.btnBrowseDeploy.UseVisualStyleBackColor = true;
             this.btnBrowseDeploy.Click += new System.EventHandler(this.BtnBrowseDeploy_Click);
 
+            // lblInspectionExe / txtInspectionExe / btnBrowseInspectionExe
+            this.lblInspectionExe.AutoSize = true;
+            this.lblInspectionExe.Location = new System.Drawing.Point(15, 180);
+            this.lblInspectionExe.Name = "lblInspectionExe";
+            this.lblInspectionExe.Size = new System.Drawing.Size(95, 15);
+            this.lblInspectionExe.Text = "検査アプリExe:";
+            this.txtInspectionExe.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtInspectionExe.Location = new System.Drawing.Point(145, 177);
+            this.txtInspectionExe.Name = "txtInspectionExe";
+            this.txtInspectionExe.PlaceholderText = "InspectionSystem_RTDETR.exe のパス (モデル自動暗号化用)";
+            this.txtInspectionExe.Size = new System.Drawing.Size(745, 23);
+            this.txtInspectionExe.TabIndex = 11;
+            this.btnBrowseInspectionExe.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnBrowseInspectionExe.Location = new System.Drawing.Point(896, 176);
+            this.btnBrowseInspectionExe.Name = "btnBrowseInspectionExe";
+            this.btnBrowseInspectionExe.Size = new System.Drawing.Size(75, 25);
+            this.btnBrowseInspectionExe.TabIndex = 12;
+            this.btnBrowseInspectionExe.Text = "参照...";
+            this.btnBrowseInspectionExe.UseVisualStyleBackColor = true;
+            this.btnBrowseInspectionExe.Click += new System.EventHandler(this.BtnBrowseInspectionExe_Click);
+
             // 
             // grpParams
             // 
@@ -224,7 +252,7 @@ namespace RTDetrTrainerApp.Forms
             this.grpParams.Controls.Add(this.lblInputSize);
             this.grpParams.Controls.Add(this.numInputSize);
             this.grpParams.Controls.Add(this.chkUseAmp);
-            this.grpParams.Location = new System.Drawing.Point(12, 203);
+            this.grpParams.Location = new System.Drawing.Point(12, 233);
             this.grpParams.Name = "grpParams";
             this.grpParams.Size = new System.Drawing.Size(984, 95);
             this.grpParams.TabIndex = 1;
@@ -330,7 +358,7 @@ namespace RTDetrTrainerApp.Forms
             this.grpAction.Controls.Add(this.btnDiagnose);
             this.grpAction.Controls.Add(this.btnStartTrain);
             this.grpAction.Controls.Add(this.btnCancel);
-            this.grpAction.Location = new System.Drawing.Point(12, 304);
+            this.grpAction.Location = new System.Drawing.Point(12, 334);
             this.grpAction.Name = "grpAction";
             this.grpAction.Size = new System.Drawing.Size(984, 65);
             this.grpAction.TabIndex = 2;
@@ -376,9 +404,9 @@ namespace RTDetrTrainerApp.Forms
             | System.Windows.Forms.AnchorStyles.Right)));
             this.grpLog.Controls.Add(this.rtbLog);
             this.grpLog.Controls.Add(this.pnlLogToolbar);
-            this.grpLog.Location = new System.Drawing.Point(12, 375);
+            this.grpLog.Location = new System.Drawing.Point(12, 405);
             this.grpLog.Name = "grpLog";
-            this.grpLog.Size = new System.Drawing.Size(984, 305);
+            this.grpLog.Size = new System.Drawing.Size(984, 275);
             this.grpLog.TabIndex = 3;
             this.grpLog.TabStop = false;
             this.grpLog.Text = "実行ログ";
@@ -489,6 +517,9 @@ namespace RTDetrTrainerApp.Forms
         private System.Windows.Forms.Label lblDeploy;
         private System.Windows.Forms.TextBox txtDeployDir;
         private System.Windows.Forms.Button btnBrowseDeploy;
+        private System.Windows.Forms.Label lblInspectionExe;
+        private System.Windows.Forms.TextBox txtInspectionExe;
+        private System.Windows.Forms.Button btnBrowseInspectionExe;
 
         private System.Windows.Forms.GroupBox grpParams;
         private System.Windows.Forms.Label lblConfig;

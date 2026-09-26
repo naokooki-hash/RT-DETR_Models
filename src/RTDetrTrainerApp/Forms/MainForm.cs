@@ -25,6 +25,7 @@ namespace RTDetrTrainerApp.Forms
             txtDatasetDir.Text = @"D:\Deveropment\RT-DETR_Models\datasets";
             txtOutputDir.Text = @"D:\Deveropment\RT-DETR_Models\outputs";
             txtDeployDir.Text = @"D:\Deveropment\RT-DETR_Models\deploy";
+            txtInspectionExe.Text = @"D:\Deveropment\InspectionSystem_RTDETR\InspectionSystem_RTDETR\bin\Debug\net10.0-windows\InspectionSystem_RTDETR.exe";
         }
 
         private static string DetectDefaultPython()
@@ -197,6 +198,21 @@ namespace RTDetrTrainerApp.Forms
             }
         }
 
+        private void BtnBrowseInspectionExe_Click(object sender, EventArgs e)
+        {
+            using var ofd = new OpenFileDialog
+            {
+                Title = "検査アプリ (InspectionSystem_RTDETR.exe) を選択してください",
+                Filter = "実行可能ファイル (*.exe;*.dll)|*.exe;*.dll|すべてのファイル (*.*)|*.*",
+                FileName = File.Exists(txtInspectionExe.Text) ? txtInspectionExe.Text : "InspectionSystem_RTDETR.exe"
+            };
+
+            if (ofd.ShowDialog(this) == DialogResult.OK)
+            {
+                txtInspectionExe.Text = ofd.FileName;
+            }
+        }
+
         #endregion
 
         #region イベントハンドラ (アクションボタン)
@@ -206,6 +222,7 @@ namespace RTDetrTrainerApp.Forms
         public bool UseAmpValue => chkUseAmp.Checked;
         public decimal EpochsValue { get => numEpochs.Value; set => numEpochs.Value = value; }
         public bool DummyModeValue { get => chkDummyMode.Checked; set => chkDummyMode.Checked = value; }
+        public string InspectionExeValue { get => txtInspectionExe.Text; set => txtInspectionExe.Text = value; }
         public string LogText => rtbLog.Text;
 
         private async void BtnDiagnose_Click(object sender, EventArgs e)
@@ -391,7 +408,8 @@ namespace RTDetrTrainerApp.Forms
                 NumWorkers = (int)numWorkers.Value,
                 InputSize = (int)numInputSize.Value,
                 UseAmp = chkUseAmp.Checked,
-                IsDummy = isDummy
+                IsDummy = isDummy,
+                InspectionExePath = txtInspectionExe.Text.Trim()
             };
 
             SetUiRunningState(true, "学習中...");
@@ -407,9 +425,13 @@ namespace RTDetrTrainerApp.Forms
                 int exitCode = await _manager.RunTrainAsync(parameters, progress, _cts.Token);
                 if (exitCode == 0)
                 {
+                    string encPath = Path.Combine(parameters.DeployDir, "model.enc");
+                    string onnxPath = Path.Combine(parameters.DeployDir, "model.onnx");
+                    string finalModel = File.Exists(encPath) ? encPath : onnxPath;
+
                     AppendLog("==================================================");
                     AppendLog("🎉 すべての工程が正常終了しました！");
-                    AppendLog($"配信モデル: {Path.Combine(parameters.DeployDir, "model.onnx")}");
+                    AppendLog($"配信モデル: {finalModel}");
                     AppendLog("==================================================");
                     lblStatus.Text = "完了: 正常終了";
 
@@ -417,7 +439,7 @@ namespace RTDetrTrainerApp.Forms
                     {
                         MessageBox.Show(
                             this,
-                            $"学習およびONNXエクスポートが完了しました！\n\n配信先モデル:\n{Path.Combine(parameters.DeployDir, "model.onnx")}",
+                            $"学習およびONNXエクスポート（暗号化配信）が完了しました！\n\n配信先モデル:\n{finalModel}",
                             "完了",
                             MessageBoxButtons.OK,
                             MessageBoxIcon.Information);

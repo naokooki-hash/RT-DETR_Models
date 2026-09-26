@@ -52,5 +52,6 @@ namespace RTDetrTrainerApp.Core
         public string? TuningWeightPath { get; set; }
         public string? ResumeWeightPath { get; set; }
         public bool IsDummy { get; set; } = false;
+        public string InspectionExePath { get; set; } = @"D:\Deveropment\InspectionSystem_RTDETR\InspectionSystem_RTDETR\bin\Debug\net10.0-windows\InspectionSystem_RTDETR.exe";
     }
 }

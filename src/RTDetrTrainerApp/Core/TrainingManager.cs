@@ -128,6 +128,11 @@ namespace RTDetrTrainerApp.Core
                 argsBuilder.Append("--dummy ");
             }
 
+            if (!string.IsNullOrWhiteSpace(p.InspectionExePath))
+            {
+                argsBuilder.Append($"--inspection-exe \"{p.InspectionExePath}\" ");
+            }
+
             string workingDir = Path.GetDirectoryName(p.AutoTrainScriptPath) ?? AppDomain.CurrentDomain.BaseDirectory;
 
             return await RunProcessAsync(

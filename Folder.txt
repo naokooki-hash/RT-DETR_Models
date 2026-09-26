@@ -1,0 +1,29 @@
+D:\Deveropment\RT-DETR_Models\
+├── src/                                # C# WinForms ソースコード (.NET 8.0)
+│   ├── RTDetrTrainerApp.sln            # ソリューションファイル
+│   └── RTDetrTrainerApp/
+│       ├── Forms/
+│       │   ├── MainForm.cs             # メイン画面処理
+│       │   └── MainForm.Designer.cs
+│       ├── Core/
+│       │   ├── TrainingManager.cs      # Pythonプロセス制御・非同期ログ取得
+│       │   └── HardwareConfig.cs       # パラメータ構造体
+│       └── RTDetrTrainerApp.csproj
+│
+├── python/                             # Pythonバックエンド関連
+│   ├── auto_train.py                   # 今回作成した自動学習・ONNX出力ラッパー
+│   └── rtdetrv2/                       # RT-DETRv2 公式リポジトリのクローン
+│       ├── configs/                    # モデル設定YAML群 (rtdetrv2_r18vd.yml 等)
+│       ├── tools/                      # train.py, export_onnx.py 等
+│       └── ...
+│
+├── datasets/                           # 学習用データセット（COCOフォーマット）
+│   └── sample_inspection/              # 例: 画像と annotations.json
+│       ├── images/
+│       └── annotations/
+│
+├── outputs/                            # 学習出力フォルダ（pth, onnx一時保存）
+│   └── run_20260926_01/                # 実行ごとに生成される出力ログ・重み
+│
+└── deploy/                             # 現場機配信用フォルダ（最終配信用）
+    └── model.onnx                      # 現場アプリが参照・自動読み込みするONNX
